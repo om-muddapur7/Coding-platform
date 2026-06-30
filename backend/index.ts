@@ -9,9 +9,9 @@ app.use(cors());
 import { createClient } from "redis"
 import { prisma } from "./db";
 import { SubmissionStatus } from "./generated/prisma/enums";
-
+ 
 const client = createClient({
-  url: "rediss://default:gQAAAAAAAl6MAAIgcDEwNTUzNmQxYzk5ZjA0NGU1ODJjMjE0MmE4ZGM1MjZmYg@fun-koi-155276.upstash.io:6379"
+  url: process.env.REDIS_URL
 });
 
 client.on("error", function(err) {
