@@ -1,3 +1,6 @@
-#include<iostream> 
- using namespace std; 
- int main() {cout << "hi"; return 0}
+#include <iostream>
+
+int main() {
+    std::cout << "Hi there!" << std::endl;
+    return 0
+}

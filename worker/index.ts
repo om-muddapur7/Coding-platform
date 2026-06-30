@@ -114,61 +114,97 @@ const worker = async () => {
 		}
 
 		if (language === "js") {
-			//run code
-			const filePath = __dirname + "/code/a.js";
 			console.log("Running user js code");
-			fs.writeFileSync(filePath, code);
-			spawn("node", [filePath]);
 
-			const response = spawn("node", [filePath]);
-			response.stdout.on("data", (chunk) => {
+			const filePath = __dirname + "/code/a.js";
+			fs.writeFileSync(filePath, code);
+
+			const program = spawn("node", [filePath]);
+
+			let runtimeError = "";
+
+			program.stdout.on("data", (chunk) => {
 				finalOutput += chunk.toString();
 			});
 
-			//update db
-			await new Promise<void>((resolve) => {
-				response.on("exit", async () => {
-					await prisma.submissions.update({
-						where: {
-							id: submissionId,
-						},
-						data: {
-							status: "Success",
-							output: finalOutput,
-						},
-					});
-					resolve();
+			program.stderr.on("data", (chunk) => {
+				runtimeError += chunk.toString();
+			});
+
+			const runExitCode = await new Promise<number>((resolve) => {
+				program.on("exit", (code) => {
+					resolve(code ?? 1);
 				});
 			});
+
+			if (runExitCode === 0) {
+				await prisma.submissions.update({
+					where: {
+						id: submissionId,
+					},
+					data: {
+						status: "Success",
+						output: finalOutput.trim(),
+					},
+				});
+			} else {
+				await prisma.submissions.update({
+					where: {
+						id: submissionId,
+					},
+					data: {
+						status: "Failure",
+						output: runtimeError.trim(),
+					},
+				});
+			}
 		}
 
 		if (language === "py") {
-			//run code
-			const filePath = __dirname + "/code/a.py";
-			console.log("Running user py code");
-			fs.writeFileSync(filePath, code);
-			spawn("python", [filePath]);
+			console.log("Running user python code");
 
-			const response = spawn("python", [filePath]);
-			response.stdout.on("data", (chunk) => {
+			const filePath = __dirname + "/code/a.py";
+			fs.writeFileSync(filePath, code);
+
+			const program = spawn("python", [filePath]);
+
+			let runtimeError = "";
+
+			program.stdout.on("data", (chunk) => {
 				finalOutput += chunk.toString();
 			});
 
-			//update db
-			await new Promise<void>((resolve) => {
-				response.on("exit", async () => {
-					await prisma.submissions.update({
-						where: {
-							id: submissionId,
-						},
-						data: {
-							status: "Success",
-							output: finalOutput,
-						},
-					});
-					resolve();
+			program.stderr.on("data", (chunk) => {
+				runtimeError += chunk.toString();
+			});
+
+			const runExitCode = await new Promise<number>((resolve) => {
+				program.on("exit", (code) => {
+					resolve(code ?? 1);
 				});
 			});
+
+			if (runExitCode === 0) {
+				await prisma.submissions.update({
+					where: {
+						id: submissionId,
+					},
+					data: {
+						status: "Success",
+						output: finalOutput.trim(),
+					},
+				});
+			} else {
+				await prisma.submissions.update({
+					where: {
+						id: submissionId,
+					},
+					data: {
+						status: "Failure",
+						output: runtimeError.trim(),
+					},
+				});
+			}
 		}
 	}
 };
