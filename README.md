@@ -220,7 +220,8 @@ REDIS_URL=your_upstash_redis_url
 
 ## Screenshots
 
-*Add screenshots or GIFs of the application here.*
+<img width="1752" height="891" alt="image" src="https://github.com/user-attachments/assets/d1681777-d2ce-4070-a33a-9836b87bbdf4" />
+
 
 ---
 
