@@ -6,6 +6,8 @@ app.use(express.json());
 
 //redis connection
 import { createClient } from "redis"
+import { prisma } from "./db";
+import { SubmissionStatus } from "./generated/prisma/enums";
 
 const client = createClient({
   url: "rediss://default:gQAAAAAAAl6MAAIgcDEwNTUzNmQxYzk5ZjA0NGU1ODJjMjE0MmE4ZGM1MjZmYg@fun-koi-155276.upstash.io:6379"
@@ -20,12 +22,21 @@ await client.set('foo','bar');
 
 //submit code
 app.post("/submission", async (req, res) => {
-    const {userId, questionId, code, language} = req.body;
+    const {code, language} = req.body;
 
-    client.lPush("problems", JSON.stringify({userId, questionId, code, language}));
+    const response = await prisma.submissions.create({
+        data: {
+            code, 
+            language,
+            status: "Processing"
+        }
+    })
+
+    client.lPush("problems", JSON.stringify({submissionId: response.id, code, language}));
 
     res.json({
-        message: "processing"
+        message: "processing",
+        id: response.id
     })
 })
 
