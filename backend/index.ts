@@ -1,8 +1,9 @@
 import express from "express";
-
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 //redis connection
 import { createClient } from "redis"
@@ -41,8 +42,16 @@ app.post("/submission", async (req, res) => {
 })
 
 //get results
-app.get("/submission/:submissionId", (req, res) => {
+app.get("/submission/:submissionId", async (req, res) => {
+    const response = await prisma.submissions.findFirst({
+        where: {
+            id: req.params.submissionId
+        }
+    });
 
+    res.json({
+        submission: response
+    })
 })
 
 app.listen(3000);
